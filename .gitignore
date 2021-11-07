@@ -1,6 +1,7 @@
 *.class
 *.log
 *.iml
+.gradle
 .DS_Store
 .idea
 target/

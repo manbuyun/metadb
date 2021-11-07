@@ -13,14 +13,6 @@ statement
     ;
 
 query
-    : queryTerm
-    ;
-
-queryTerm
-    : queryPrimary
-    ;
-
-queryPrimary
     : querySpecification
     ;
 
@@ -48,11 +40,7 @@ expression
     ;
 
 booleanExpression
-    : valueExpression predicate?
-    ;
-
-predicate
-    : comparisonOperator valueExpression
+    : left=valueExpression comparisonOperator right=valueExpression            #comparison
     ;
 
 valueExpression
@@ -61,6 +49,8 @@ valueExpression
 
 primaryExpression
     : qualifiedName
+    | number
+    | string
     ;
 
 qualifiedName
@@ -73,6 +63,15 @@ comparisonOperator
 
 identifier
     : IDENTIFIER
+    ;
+
+number
+    : INTEGER_VALUE                                                            #integerLiteral
+    | DOUBLE_VALUE                                                             #doubleLiteral
+    ;
+
+string
+    : '\'' (~'\'')* '\''
     ;
 
 AS: 'AS';
@@ -91,6 +90,14 @@ ASTERISK: '*';
 
 IDENTIFIER
     : (LETTER | '_') (LETTER | DIGIT | '_')*
+    ;
+
+INTEGER_VALUE
+    : DIGIT+
+    ;
+
+DOUBLE_VALUE
+    : DIGIT+ ('.' DIGIT+)?
     ;
 
 fragment DIGIT
