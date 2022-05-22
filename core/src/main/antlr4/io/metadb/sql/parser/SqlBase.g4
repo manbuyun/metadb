@@ -1,9 +1,5 @@
 grammar SqlBase;
 
-tokens {
-    DELIMITER
-}
-
 singleStatement
     : statement EOF
     ;
@@ -13,38 +9,17 @@ statement
     ;
 
 query
-    : querySpecification
-    ;
-
-querySpecification
     : SELECT selectItem (',' selectItem)*
-      (FROM relation (',' relation)*)?
-      (WHERE booleanExpression)?
     ;
 
 selectItem
     : expression (AS? identifier)?
-    | ASTERISK
-    ;
-
-relation
-    : relationPrimary (AS? identifier)?
-    ;
-
-relationPrimary
-    : qualifiedName
     ;
 
 expression
-    : booleanExpression
-    ;
-
-booleanExpression
-    : left=valueExpression comparisonOperator right=valueExpression            #comparison
-    ;
-
-valueExpression
-    : primaryExpression
+    : primaryExpression                                                                  #expressionDefault
+    | left=expression operator=(ASTERISK | SLASH) right=expression                       #arithmeticBinary
+    | left=expression operator=(PLUS | MINUS) right=expression                           #arithmeticBinary
     ;
 
 primaryExpression
@@ -57,47 +32,41 @@ qualifiedName
     : identifier ('.' identifier)*
     ;
 
-comparisonOperator
-    : EQ | NEQ | LT | LTE | GT | GTE
-    ;
-
 identifier
     : IDENTIFIER
     ;
 
 number
-    : INTEGER_VALUE                                                            #integerLiteral
-    | DOUBLE_VALUE                                                             #doubleLiteral
+    : INTEGER                                                                            #integerLiteral
+    | DOUBLE                                                                             #doubleLiteral
     ;
 
 string
-    : '\'' (~'\'')* '\''
+    : STRING
     ;
 
-AS: 'AS';
 SELECT: 'SELECT';
-FROM: 'FROM';
-WHERE: 'WHERE';
+AS: 'AS';
 
-EQ: '=';
-NEQ: '<>' | '!=';
-LT: '<';
-LTE: '<=';
-GT: '>';
-GTE: '>=';
-
+PLUS: '+';
+MINUS: '-';
 ASTERISK: '*';
+SLASH: '/';
 
 IDENTIFIER
     : (LETTER | '_') (LETTER | DIGIT | '_')*
     ;
 
-INTEGER_VALUE
+INTEGER
     : DIGIT+
     ;
 
-DOUBLE_VALUE
+DOUBLE
     : DIGIT+ ('.' DIGIT+)?
+    ;
+
+STRING
+    : '\'' (~'\'')* '\''
     ;
 
 fragment DIGIT

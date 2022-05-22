@@ -5,15 +5,15 @@ import java.util.Optional;
 
 /**
  * @author jinhai
- * @date 2021/11/01
+ * @date 2022/05/22
  */
-public class IntegerLiteral extends Literal {
+public class LongLiteral extends Literal {
 
-    private int value;
+    private long value;
 
-    public IntegerLiteral(NodeLocation location, String value) {
+    public LongLiteral(NodeLocation location, String value) {
         super(Optional.of(location));
-        this.value = Integer.parseInt(value);
+        this.value = Long.parseLong(value);
     }
 
     @Override
@@ -29,12 +29,12 @@ public class IntegerLiteral extends Literal {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        IntegerLiteral that = (IntegerLiteral) obj;
+        LongLiteral that = (LongLiteral) obj;
         return Objects.equals(value, that.value);
     }
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+        return Long.toString(value);
     }
 }

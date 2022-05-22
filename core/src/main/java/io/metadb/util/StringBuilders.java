@@ -5,9 +5,8 @@ package io.metadb.util;
  * @date 2021/10/30
  */
 public class StringBuilders {
-    // 2k
-    private static final int DISCARD_LIMIT = 1024 << 1;
-    private static final ThreadLocal<StringBuilder> threadLocal = ThreadLocal.withInitial(() -> new StringBuilder(256));
+    private static final int DISCARD_LIMIT = 1024;
+    private static final ThreadLocal<StringBuilder> threadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
 
     private StringBuilders() {
     }
@@ -16,7 +15,7 @@ public class StringBuilders {
         StringBuilder buf = threadLocal.get();
 
         if (buf.capacity() > DISCARD_LIMIT) {
-            buf.setLength(1024);
+            buf.setLength(256);
             buf.trimToSize();
         }
         buf.setLength(0);

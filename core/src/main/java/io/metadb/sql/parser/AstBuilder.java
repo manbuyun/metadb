@@ -3,7 +3,6 @@ package io.metadb.sql.parser;
 import io.metadb.sql.tree.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,14 +15,11 @@ import java.util.stream.Collectors;
 public class AstBuilder extends SqlBaseBaseVisitor<Node> {
 
     @Override
-    public Node visitComparison(SqlBaseParser.ComparisonContext ctx) {
-        Token symbol = ((TerminalNode) ctx.comparisonOperator().getChild(0)).getSymbol();
-
-        return new Comparison(
-                getLocation(ctx),
-                (Expression) visit(ctx.left),
-                getOperator(symbol),
-                (Expression) visit(ctx.right));
+    public Node visitArithmeticBinary(SqlBaseParser.ArithmeticBinaryContext ctx) {
+        Expression left = (Expression) visit(ctx.left);
+        ArithmeticBinary.Operator operator = getArithmeticBinaryOperator(ctx.operator);
+        Expression right = (Expression) visit(ctx.right);
+        return new ArithmeticBinary(getLocation(ctx), left, operator, right);
     }
 
     @Override
@@ -39,7 +35,7 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
 
     @Override
     public Node visitIntegerLiteral(SqlBaseParser.IntegerLiteralContext ctx) {
-        return new IntegerLiteral(getLocation(ctx), ctx.getText());
+        return new LongLiteral(getLocation(ctx), ctx.getText());
     }
 
     @Override
@@ -52,6 +48,20 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
         return ctxs.stream().map(this::visit).map(clazz::cast).collect(Collectors.toList());
     }
 
+    private static ArithmeticBinary.Operator getArithmeticBinaryOperator(Token operator) {
+        switch (operator.getType()) {
+            case SqlBaseLexer.PLUS:
+                return ArithmeticBinary.Operator.ADD;
+            case SqlBaseLexer.MINUS:
+                return ArithmeticBinary.Operator.SUBTRACT;
+            case SqlBaseLexer.ASTERISK:
+                return ArithmeticBinary.Operator.MULTIPLY;
+            case SqlBaseLexer.SLASH:
+                return ArithmeticBinary.Operator.DIVIDE;
+        }
+        throw new UnsupportedOperationException("Unsupported operator: " + operator.getText());
+    }
+
     private NodeLocation getLocation(ParserRuleContext ctx) {
         Objects.requireNonNull(ctx, "ParserRuleContext is null");
         return getLocation(ctx.getStart());
@@ -60,24 +70,5 @@ public class AstBuilder extends SqlBaseBaseVisitor<Node> {
     private NodeLocation getLocation(Token token) {
         Objects.requireNonNull(token, "Token is null");
         return new NodeLocation(token.getLine(), token.getCharPositionInLine() + 1);
-    }
-
-    private static Comparison.Operator getOperator(Token symbol) {
-        switch (symbol.getType()) {
-            case SqlBaseLexer.EQ:
-                return Comparison.Operator.EQUAL;
-            case SqlBaseLexer.NEQ:
-                return Comparison.Operator.NOT_EQUAL;
-            case SqlBaseLexer.LT:
-                return Comparison.Operator.LESS_THAN;
-            case SqlBaseLexer.LTE:
-                return Comparison.Operator.LESS_THAN_OR_EQUAL;
-            case SqlBaseLexer.GT:
-                return Comparison.Operator.GREATER_THAN;
-            case SqlBaseLexer.GTE:
-                return Comparison.Operator.GREATER_THAN_OR_EQUAL;
-        }
-
-        throw new IllegalArgumentException("Unsupported operator: " + symbol.getText());
     }
 }

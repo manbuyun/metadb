@@ -11,6 +11,6 @@ public class TestSqlParser {
 
     @Test
     public void testQuerySpecification() {
-        SQL_PARSER.parse("select * from test where name='hello'");
+        SQL_PARSER.parse("select 1+2*3");
     }
 }
